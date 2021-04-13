@@ -1,1 +1,14 @@
+rm(list=ls(all=TRUE))
+options(digits=3)
+install.packages("survival")
+library(survival)
 
+melanoma<-read.csv("Melanoma.csv",header=TRUE)
+cox.fit<-coxph(Surv(time,status==1)~factor(sex)+age+thickness+factor(ulcer),data=melanoma)
+summary(cox.fit)
+
+cox.fit2<-coxph(Surv(time,status==1)~thickness+factor(ulcer),data=melanoma)
+summary(cox.fit2)
+
+#Comparison of the two models
+anova(cox.fit,cox.fit2)
