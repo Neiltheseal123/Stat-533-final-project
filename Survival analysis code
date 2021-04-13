@@ -12,3 +12,80 @@ summary(cox.fit2)
 
 #Comparison of the two models
 anova(cox.fit,cox.fit2)
+
+rm(list=ls(all=TRUE))
+options(digits=3)
+install.packages("survival")
+library(survival)
+install.packages("dplyr")
+library(dplyr)
+
+#Setup data
+melanoma<-read.csv("Melanoma.csv",header=TRUE)
+
+#use variable 0~alive or died unrelated to melanoma, 1~die due to melanoma
+melanoma.df = melanoma %>% mutate(death_status = case_when(melanoma$status==2 ~ 0,
+              melanoma$status==3 ~ 0, melanoma$status==1 ~ 1))
+
+#model fit and variable selection 
+fit.cox = coxph(Surv(time,death_status)~factor(sex)+age+thickness+year+factor(ulcer),data=melanoma.df)
+fit.cox
+
+#model testing and model selection
+#main factors
+coxph(Surv(time,death_status)~thickness+factor(ulcer),data=melanoma.df)
+
+#perform local tests for each explanatory factor in the model
+#will use Wald test 
+coxph.localtest<-function(coxph.fit, df){
+  coef<-coxph.fit$coef
+  var<-coxph.fit$var
+  loglik<-coxph.fit$loglik[2]
+  p<-length(coef)
+  AIC<- -2*loglik+2*p    #Using the formula on p.277;
+  var.mat<-solve(as.matrix(var[(p-df+1):p, (p-df+1):p]))
+  coe.mat<-matrix(c(coef[(p-df+1):p]), df, 1)
+  WaldChiSq<-t(coe.mat)%*%var.mat%*%coe.mat
+  pvalue<-1-pchisq(WaldChiSq,df)
+  results<-c(df, WaldChiSq, pvalue, AIC)
+  list(results)
+}
+
+options(width=60,length=200,digits=5) 
+
+Table_checkup<-matrix(0,3,4)
+
+coxph.sex<-coxph(Surv(time,death_status)~ulcer+thickness+factor(sex), method=c("breslow"), data=melanoma.df)
+coxph.age<-coxph(Surv(time,death_status)~ulcer+thickness+age, method=c("breslow"), data=melanoma.df)
+coxph.year <- coxph(Surv(time,death_status)~ulcer+thickness+year, method=c("breslow"), data=melanoma.df)
+
+Table_checkup[1,]<-c(coxph.localtest(coxph.sex, df=1)[[1]])
+Table_checkup[2,]<-c(coxph.localtest(coxph.age, df=1)[[1]])
+Table_checkup[3,]<-c(coxph.localtest(coxph.year, df=1)[[1]])
+
+cat("Table 8.6: Local test for possible confounders, adjusted for factors of gender, age, thickness and ulcera", "\n")
+cat("    DF, Wald Chi-Squre, p-value, AIC:", "\n")
+print(Table_checkup)
+
+#since all p_value more than 0.05, we fail to reject Ho and said sex, age and year is not effective
+
+#This is the finalized model
+coxph_final<-coxph(Surv(time,death_status)~ulcer+thickness, method=c("breslow"), data=melanoma.df)
+
+cat("Table 8.9: Analysis of Variance Table for the Final Model for \  
+       Bone Marrow Transplants", "\n")
+print(coxph_final)
+
+######################################
+#Double check it by taking forward and backward AIC method but it turn out same as reject age, year and gender
+
+# backward AIC method
+stepAIC(fit.cox,  ditrection="backward",trace=-1) 
+
+fit.cox <- coxph(Surv(time,death_status)~1,data=melanoma.df)
+fit.cox
+
+# forward AIC method
+stepAIC(fit.cox, direction="forward", 
+        scope=list(lower=fit.cox, upper=~factor(sex)+age+thickness+year+factor(ulcer)))
+#######################################
