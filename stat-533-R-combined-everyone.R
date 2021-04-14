@@ -192,6 +192,8 @@ fit.cox.zph
 #model testing and model selection
 
 #perform local tests for each explanatory factor in the model
+#We know thickness and ulcer factor are absolute effective but we need to once test age, gender and year 
+#to figure out more effective factors.
 #will use Wald test 
 coxph.localtest<-function(coxph.fit, df){
   coef<-coxph.fit$coef
@@ -223,10 +225,10 @@ cat("Table 8.6: Local test for possible confounders, adjusted for factors of gen
 cat("    DF, Wald Chi-Squre, p-value, AIC:", "\n")
 print(Table_checkup)
 
-#since all p_value more than 0.05, we fail to reject Ho and said sex, age and year is not effective
+#since all p_value except age more than 0.05, we fail to reject Ho and said sex and year is not effective as only age is 
 
 #This is the finalized model
-coxph_final<-coxph(Surv(time,death_status)~strata(factor(ulcer))+thickness, method=c("breslow"), data=melanoma.df)
+coxph_final<-coxph(Surv(time,death_status)~strata(factor(ulcer))+thickness+age, method=c("breslow"), data=melanoma.df)
 
 cat("Table 8.9: Analysis of Variance Table for the Final Model for the survival of Malignant Melanoma", "\n")
 print(coxph_final)
@@ -243,6 +245,7 @@ stepAIC(fit.cox,  ditrection="backward",trace=-1)
 # forward AIC method
 stepAIC(fit.cox, direction="forward", 
         scope=list(lower=fit.cox, upper=~factor(sex)+age+thickness+year+strata(factor(ulcer))))
+cat("with backward and forward AIC method, we obtain the same results as hazard proportion.")
 #######################################
 # Adjust for competing risks 
 
@@ -253,3 +256,7 @@ cen_class = "Surv(time, status_cen)"
 melanoma.df %>%coxphmulti(mm_class, explanatory)
 melanoma.df%>%crrmulti(cen_class, explanatory)
 ##################################
+
+cat("Due to our cox hazard proportion and Kaplan Meier Analysis, we can conlude that thickness, ulcer status and age are
+    effective to death rate or status, since only male is effective but not female, then we also conclude gender and 
+    operation year is not effective factors.")
