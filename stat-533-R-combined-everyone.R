@@ -1,3 +1,6 @@
+rm(list=ls(all=TRUE))
+options(digits=3)
+
 #### LIBRARY USED#################
 library(survival)
 library(forcats)
