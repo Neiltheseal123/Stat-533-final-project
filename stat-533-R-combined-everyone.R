@@ -96,7 +96,7 @@ km_gender_plot <- km_gender_plot +
   labs(x = xlabel, y = ylabel) +
   guides(fill=FALSE) +
   labs(colour = "Gender") +
-  scale_color_manual(labels = c("Male", "Female"), values = c(1, 2))
+  scale_color_manual(labels = c("Female", "Male"), values = c(1, 2))
 print(km_gender_plot)
 
 # BY ULCER
@@ -112,7 +112,7 @@ km_ulcer_plot <- km_ulcer_plot +
   labs(x = xlabel, y = ylabel) +
   guides(fill=FALSE) +
   labs(colour = "Ulceration") +
-  scale_color_manual(labels = c("Ulcer Present", "Ulcer Absent"), values = c(1, 2))
+  scale_color_manual(labels = c( "Ulcer Absent", "Ulcer Present"), values = c(1, 2))
 print(km_ulcer_plot)
 
 
