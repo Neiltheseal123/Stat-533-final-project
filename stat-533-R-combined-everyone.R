@@ -74,7 +74,7 @@ melanoma.df = melanoma %>%mutate(
 
 # Kaplan-Meier estimates 
 km_fit <- survfit(
-  Surv(time/365, status_general)~1, 
+  Surv(time, status_general)~1, 
   data=melanoma.df
 )
 summary(km_fit, times = c(1,30,60,90*(1:10)))
