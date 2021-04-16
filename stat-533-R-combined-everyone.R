@@ -159,10 +159,6 @@ plot_km_age(cutoff_ages)
 ######## Cox Prop Haz Model
 #model fit and variable selection 
 # Perform CoxPropHaz model
-modelfit.cox.ph = coxph(Surv(time,death_status)~strata(factor(ulcer))+thickness+age+factor(sex)+year, method=c("breslow"), data=melanoma.df)
-modelfit.cox.ph
-summary(modelfit.cox.ph)
-
 # testing proportional hazard assumption
 
 #gerneral
