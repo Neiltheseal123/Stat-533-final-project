@@ -166,6 +166,7 @@ par(mfrow=c(2,3))
 death_status <-  melanoma.df$status_general
 fit.cox = coxph(Surv(time,death_status)~factor(sex)+age+thickness+year+factor(ulcer),method=c("breslow"), na.action=na.exclude, data=melanoma.df)
 fit.cox.zph = cox.zph(fit.cox)
+summary(fit.cox)
 summary(fit.cox.zph)
 plot(fit.cox.zph)
 
